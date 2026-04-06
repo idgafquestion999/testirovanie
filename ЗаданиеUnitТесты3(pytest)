@@ -1,0 +1,75 @@
+import pytest
+import math
+from shapes import Circle, Rectangle
+
+@pytest.fixture
+def circle():
+    return Circle(1)
+
+def test_circle_positive_radius():
+    circle = Circle(5)
+    assert circle.radius == 5
+
+def test_circle_negative_radius():
+    with pytest.raises(ValueError, match="Radius must be positive."):
+        Circle(-1)
+    with pytest.raises(ValueError, match="Radius must be positive."):
+        Circle(0)
+
+@pytest.mark.parametrize("radius,expected_area", [
+    (1, math.pi),
+    (2, math.pi * 4),
+    (2.5, math.pi * 6.25),
+    (0.5, math.pi * 0.25),
+])
+def test_circle_area(radius, expected_area):
+    circle = Circle(radius)
+    assert round(circle.area(), 5) == round(expected_area, 5)
+
+@pytest.mark.parametrize("radius,expected_perimeter", [
+    (1, 2 * math.pi),
+    (2, 4 * math.pi),
+    (2.5, 5 * math.pi),
+    (0.5, math.pi),
+])
+def test_circle_perimeter(radius, expected_perimeter):
+    circle = Circle(radius)
+    assert round(circle.perimeter(), 5) == round(expected_perimeter, 5)
+
+def test_circle_fixture(circle):
+    assert circle.radius == 1
+    assert round(circle.area(), 5) == round(math.pi, 5)
+    assert round(circle.perimeter(), 5) == round(2 * math.pi, 5)
+
+def test_rectangle_positive_dimensions():
+    rect = Rectangle(5, 3)
+    assert rect.width == 5
+    assert rect.height == 3
+
+def test_rectangle_invalid_dimensions():
+    with pytest.raises(ValueError, match="Width and height must be positive."):
+        Rectangle(-1, 5)
+    with pytest.raises(ValueError, match="Width and height must be positive."):
+        Rectangle(5, -1)
+    with pytest.raises(ValueError, match="Width and height must be positive."):
+        Rectangle(0, 5)
+
+@pytest.mark.parametrize("width,height,expected_area", [
+    (5, 3, 15),
+    (2.5, 4, 10),
+    (10, 10, 100),
+    (1, 1, 1),
+])
+def test_rectangle_area(width, height, expected_area):
+    rect = Rectangle(width, height)
+    assert rect.area() == expected_area
+
+@pytest.mark.parametrize("width,height,expected_perimeter", [
+    (5, 3, 16),
+    (2.5, 4, 13),
+    (10, 10, 40),
+    (1, 1, 4),
+])
+def test_rectangle_perimeter(width, height, expected_perimeter):
+    rect = Rectangle(width, height)
+    assert rect.perimeter() == expected_perimeter
