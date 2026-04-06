@@ -1,0 +1,34 @@
+import pytest
+
+@pytest.mark.integration
+def test_create_user_api(client):
+    response = client.post('/users', json={'name': 'John', 'email': 'john@example.com'})
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data['name'] == 'John'
+    assert data['email'] == 'john@example.com'
+
+@pytest.mark.integration
+def test_get_users_api(client):
+    client.post('/users', json={'name': 'Jane', 'email': 'jane@example.com'})
+    response = client.get('/users')
+    assert response.status_code == 200
+    users = response.get_json()
+    assert len(users) == 1
+    assert users[0]['name'] == 'Jane'
+
+@pytest.mark.integration
+def test_empty_users_list_api(client):
+    response = client.get('/users')
+    assert response.status_code == 200
+    assert response.get_json() == []
+
+@pytest.mark.integration
+def test_multiple_users_api(client):
+    client.post('/users', json={'name': 'User1'})
+    client.post('/users', json={'name': 'User2'})
+    response = client.get('/users')
+    users = response.get_json()
+    assert len(users) == 2
+    assert users[0]['name'] == 'User1'
+    assert users[1]['name'] == 'User2'
