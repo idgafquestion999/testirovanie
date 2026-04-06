@@ -1,0 +1,19 @@
+import sqlite3
+import pytest
+from app.repository import init_db
+from app.api import create_app, users
+
+@pytest.fixture
+def db_connection():
+    connection = sqlite3.connect(":memory:")
+    init_db(connection)
+    yield connection
+    connection.close()
+
+@pytest.fixture
+def client():
+    users.clear()
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        yield client
