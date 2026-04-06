@@ -1,0 +1,94 @@
+import unittest
+from library import Library
+
+class TestLibrary(unittest.TestCase):
+    
+    def setUp(self):
+        self.library = Library()
+    
+    def test_add_book_success(self):
+        self.library.add_book("1984", "George Orwell", "12345")
+        books = self.library.list_books()
+        self.assertEqual(len(books), 1)
+        self.assertEqual(books[0]["title"], "1984")
+        self.assertEqual(books[0]["author"], "George Orwell")
+        self.assertEqual(books[0]["isbn"], "12345")
+    
+    def test_add_book_empty_fields(self):
+        with self.assertRaises(ValueError):
+            self.library.add_book("", "Author", "123")
+        with self.assertRaises(ValueError):
+            self.library.add_book("Title", "", "123")
+        with self.assertRaises(ValueError):
+            self.library.add_book("Title", "Author", "")
+        with self.assertRaises(ValueError):
+            self.library.add_book(None, "Author", "123")
+    
+    def test_add_book_duplicate_isbn(self):
+        self.library.add_book("Book1", "Author1", "111")
+        with self.assertRaises(ValueError):
+            self.library.add_book("Book2", "Author2", "111")
+    
+    def test_add_book_appears_in_list(self):
+        self.library.add_book("Test Book", "Test Author", "999")
+        books = self.library.list_books()
+        self.assertIn({"title": "Test Book", "author": "Test Author", "isbn": "999"}, books)
+    
+    def test_remove_book_success(self):
+        self.library.add_book("Book", "Author", "555")
+        self.library.remove_book("555")
+        self.assertEqual(len(self.library.list_books()), 0)
+    
+    def test_remove_book_not_found(self):
+        with self.assertRaises(ValueError):
+            self.library.remove_book("nonexistent")
+    
+    def test_remove_book_disappears(self):
+        self.library.add_book("Book1", "Author1", "111")
+        self.library.add_book("Book2", "Author2", "222")
+        self.library.remove_book("111")
+        books = self.library.list_books()
+        self.assertEqual(len(books), 1)
+        self.assertEqual(books[0]["isbn"], "222")
+    
+    def test_find_book_by_title_success(self):
+        self.library.add_book("1984", "George Orwell", "123")
+        found = self.library.find_book_by_title("1984")
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0]["author"], "George Orwell")
+    
+    def test_find_multiple_books_same_title(self):
+        self.library.add_book("Python Basics", "Author1", "111")
+        self.library.add_book("Python Basics", "Author2", "222")
+        found = self.library.find_book_by_title("Python Basics")
+        self.assertEqual(len(found), 2)
+    
+    def test_find_nonexistent_title(self):
+        found = self.library.find_book_by_title("Nonexistent")
+        self.assertEqual(found, [])
+    
+    def test_list_books_returns_copy(self):
+        self.library.add_book("Book1", "Author1", "111")
+        books_copy = self.library.list_books()
+        books_copy.append({"title": "Fake", "author": "Fake", "isbn": "999"})
+        self.assertEqual(len(self.library.list_books()), 1)
+    
+    def test_list_books_preserves_order(self):
+        self.library.add_book("First", "Author1", "111")
+        self.library.add_book("Second", "Author2", "222")
+        books = self.library.list_books()
+        self.assertEqual(books[0]["title"], "First")
+        self.assertEqual(books[1]["title"], "Second")
+    
+    def test_add_book_with_spaces(self):
+        self.library.add_book("   ", "   ", "   ")
+        books = self.library.list_books()
+        self.assertEqual(books[0]["title"], "   ")
+    
+    def test_isbn_type_matters(self):
+        self.library.add_book("Book1", "Author1", "123")
+        with self.assertRaises(ValueError):
+            self.library.add_book("Book2", "Author2", 123)
+
+if __name__ == '__main__':
+    unittest.main()
