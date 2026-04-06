@@ -1,0 +1,33 @@
+import pytest
+import os
+import tempfile
+from app.files import save_report, read_report
+
+@pytest.mark.integration
+def test_save_and_read_report():
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        tmp_path = tmp.name
+    
+    try:
+        test_text = "Hello, World!"
+        save_report(tmp_path, test_text)
+        assert os.path.exists(tmp_path)
+        content = read_report(tmp_path)
+        assert content == test_text
+    finally:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+
+@pytest.mark.integration
+def test_report_overwrite():
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        tmp_path = tmp.name
+    
+    try:
+        save_report(tmp_path, "First content")
+        save_report(tmp_path, "Second content")
+        content = read_report(tmp_path)
+        assert content == "Second content"
+    finally:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
